@@ -3,6 +3,7 @@ package org.apache.storm.starter;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.storm.Config;
 import org.apache.storm.StormSubmitter;
 import org.apache.storm.generated.AlreadyAliveException;
@@ -22,9 +23,8 @@ import org.apache.storm.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class BasicTopology {
-
-    private static final Logger LOG = LoggerFactory.getLogger(org.apache.storm.starter.BasicTopology.class);
 
     public static void main(String[] args) throws InvalidTopologyException, AuthorizationException, AlreadyAliveException {
         TopologyBuilder builder = new TopologyBuilder();
@@ -44,7 +44,7 @@ public class BasicTopology {
 
             Integer data = input.getInteger(0);
 
-            LOG.info("BasicBolt received {}", data);
+            log.info("BasicBolt received {}", data);
             collector.emit(new Values(data));
         }
 
