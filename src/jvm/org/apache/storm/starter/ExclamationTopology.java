@@ -26,6 +26,8 @@ import org.apache.storm.tuple.Values;
 
 /**
  * This is a basic example of a Storm topology.
+ * Reference
+ * - https://www.freecodecamp.org/news/apache-storm-is-awesome-this-is-why-you-should-be-using-it-d7c37519a427/
  */
 public class ExclamationTopology extends ConfigurableTopology {
 
@@ -41,10 +43,9 @@ public class ExclamationTopology extends ConfigurableTopology {
         builder.setBolt("exclaim2", new ExclamationBolt(), 2).shuffleGrouping("exclaim1");
 
         conf.setDebug(true);
+        conf.setNumWorkers(3);
 
         String topologyName = "test";
-
-        conf.setNumWorkers(3);
 
         if (args != null && args.length > 0) {
             topologyName = args[0];
@@ -63,8 +64,13 @@ public class ExclamationTopology extends ConfigurableTopology {
 
         @Override
         public void execute(Tuple tuple) {
-            collector.emit(tuple, new Values(tuple.getString(0) + "!!!"));
-            collector.ack(tuple);
+            collector.emit(tuple, new Values(tuple.getString(0) + "!!!")); // Anchoring [To trace origin of tuple]
+            collector.ack(tuple); // Tuple being explicitly acknowledged by bolt for being fully processed
+
+            // The ack call will result in the ack method on the spout being called, if it has been implemented.
+
+            // If we’re reading the tuple data from some queue, we can only take it off the queue if the tuple has been fully processed.
+            // The ack method is where you’d do that.
         }
 
         @Override

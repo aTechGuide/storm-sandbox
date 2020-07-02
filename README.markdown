@@ -5,7 +5,7 @@
 - Basic topology written in all Java
 
 #### [ExclamationTopology](src/jvm/org/apache/storm/starter/ExclamationTopology.java)
-- Basic topology written in all Java
+- Reliable topology highlighting `Anchoring` and explicit `Ack`
 - Adds Exclamation marks to words
 
 #### [WordCountTopology](src/jvm/org/apache/storm/starter/WordCountTopology.java) 
