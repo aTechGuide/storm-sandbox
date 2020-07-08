@@ -13,16 +13,20 @@
 package org.apache.storm.starter;
 
 import java.util.Map;
+import java.util.Random;
+
+import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
-import org.apache.storm.testing.TestWordSpout;
 import org.apache.storm.topology.ConfigurableTopology;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.topology.base.BaseRichSpout;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
+import org.apache.storm.utils.Utils;
 
 /**
  * This is a basic example of a Storm topology.
@@ -31,21 +35,21 @@ import org.apache.storm.tuple.Values;
  */
 public class ExclamationTopology extends ConfigurableTopology {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         ConfigurableTopology.start(new ExclamationTopology(), args);
     }
 
     protected int run(String[] args) {
         TopologyBuilder builder = new TopologyBuilder();
 
-        builder.setSpout("word", new TestWordSpout(), 10);
-        builder.setBolt("exclaim1", new ExclamationBolt(), 3).shuffleGrouping("word");
-        builder.setBolt("exclaim2", new ExclamationBolt(), 2).shuffleGrouping("exclaim1");
+        builder.setSpout("word", new WordSpout(), 1);
+        builder.setBolt("exclaim1", new ExclamationBolt(), 1).shuffleGrouping("word");
+        builder.setBolt("exclaim2", new ExclamationBolt(), 1).shuffleGrouping("exclaim1");
 
         conf.setDebug(true);
         conf.setNumWorkers(3);
 
-        String topologyName = "test";
+        String topologyName = "ExclamationTopology";
 
         if (args != null && args.length > 0) {
             topologyName = args[0];
@@ -54,7 +58,32 @@ public class ExclamationTopology extends ConfigurableTopology {
         return submit(topologyName, conf, builder);
     }
 
-    public static class ExclamationBolt extends BaseRichBolt {
+    private static class WordSpout extends BaseRichSpout {
+
+        private SpoutOutputCollector collector;
+
+        @Override
+        public void open(Map<String, Object> conf, TopologyContext context, SpoutOutputCollector collector) {
+            this.collector = collector;
+        }
+
+        @Override
+        public void nextTuple() {
+            Utils.sleep(1000);
+            final String[] words = new String[]{ "kamran", "ali", "sabha", "chotu" };
+            final Random rand = new Random();
+            final String word = words[rand.nextInt(words.length)];
+            collector.emit(new Values(word));
+        }
+
+        @Override
+        public void declareOutputFields(OutputFieldsDeclarer declarer) {
+            declarer.declare(new Fields("word"));
+
+        }
+    }
+
+    private static class ExclamationBolt extends BaseRichBolt {
         OutputCollector collector;
 
         @Override
